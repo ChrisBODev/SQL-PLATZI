@@ -72,10 +72,19 @@ create table if not exists bill_products(
     foreign key (product_id) references products(product_id)
         on delete cascade
         on update cascade
-)
+);
 
 
-insert into products(name, slug) values ('cuaderno', 'slug-cuaderno');
+insert into products(name, slug) values ('pluma azul', 'pluma-azul');
+insert into products(name, slug) values ('pluma roja', 'pluma-roja');
+insert into products(name, slug) values ('pluma negra', 'pluma-negra');
+insert into products(name, slug, description) values ('pluma rosa', 'pluma-rosa', 'una pluma para vender');
+
 insert into bill_products(bill_id, product_id) values (1, 1);
 
+update products set description='una pluma para vender' where product_id=6;
+select * from products;
 
+alter table products add column price float after slug; 
+
+update products set price = rand() * 100 where product_id > 0;
