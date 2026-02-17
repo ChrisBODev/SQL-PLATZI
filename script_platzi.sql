@@ -1,90 +1,73 @@
-show databases;
-use platzi_db;
-create table Clients(
-	client_id integer unsigned primary key auto_increment,
-    name varchar(100) not null,
-    email varchar(100) not null unique,
-    phone_number varchar(15),
-    created_at timestamp not null default current_timestamp,
-    updated_at timestamp not null default current_timestamp on update current_timestamp
-);
-show warnings;
 
+
+create database if not exists platzisql;
+
+use platzisql;
+create table if not exists clients (
+  client_id integer primary key auto_increment,
+  name varchar(100) not null,
+  email varchar(100) not null unique,
+  phone_number varchar(15),
+  created_at timestamp not null default CURRENT_TIMESTAMP,
+  updated_at timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
+);
 
 create table if not exists products (
-	`product_id`integer unsigned  primary key auto_increment,
-    name varchar(100) not null,
-    slug varchar(200) not null unique,
-    description text,
-    created_at timestamp not null default current_timestamp,
-    updated_at timestamp not null default current_timestamp on update current_timestamp
+  `product_id` integer unsigned primary key auto_increment,
+  name varchar(100) not null,
+  sku varchar(20) not null,
+  slug varchar(200) not null unique,
+  description text,
+  price float not null default 0,
+  created_at timestamp not null default CURRENT_TIMESTAMP,
+  updated_at timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
 );
-
-show tables;
 
 create table if not exists bills (
-	bill_id integer unsigned primary key auto_increment,
-    client_id  integer unsigned not null,
-    total float,
-    status enum('open', 'paid', 'lost') not null default 'open',
-    created_at timestamp not null default current_timestamp,
-    updated_at timestamp not null default current_timestamp on update current_timestamp,
-    foreign key (client_id) references clients(client_id)
-		on delete cascade
-        on update cascade
+  bill_id integer unsigned primary key auto_increment,
+  client_id integer not null,
+  total float,
+  status enum('open', 'paid', 'lost') not null default 'open',
+  created_at timestamp not null default CURRENT_TIMESTAMP,
+  updated_at timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
 );
 
-select * from bills;
-select * from clients;
+
+create table if not exists bill_products (
+  bill_product_id integer unsigned primary key auto_increment,
+  bill_id integer unsigned not null,
+  product_id integer unsigned not null,
+  quantity integer not null default 1,
+  price float not null,
+  discount integer not null default 0,
+  date_added datetime,
+  created_at timestamp not null default CURRENT_TIMESTAMP,
+  updated_at timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
+);
 
 
-drop table bills;
+alter table products add column stock integer unsigned not null default 0 after price;
 
-insert into bills (client_id, total) values (10, 15.00);
-insert into clients (client_id, name, email) values (10, 'eduardo', 'eduardo@email.com');
+SET SQL_SAFE_UPDATES = 1;
 
+update  products set stock = round(100 * rand());
 
+select * from products limit 10;
+alter table clients add column active tinyint not null default 1 after phone_number;
 
+select * from clients limit 10;
 
-select * from bills;
+update clients set active=0 where client_id = 3680;
 
-select * from clients;
-update clients set client_id = 12 where client_id = 10;
+select * from clients where client_id=3680;
 
-
-show create table bills	;
-
-insert into bills (client_id, total) values (10, 10.50);
-select * from bills;
-
-
-
-create table if not exists bill_products(
-    bill_product_id integer unsigned primary key auto_increment,
-    bill_id integer unsigned not null,
+create table if not exists investments(
+	investment_id integer unsigned primary key auto_increment,
     product_id integer unsigned not null,
-    quantity integer unsigned not null default 1,
-    created_at timestamp not null default current_timestamp,
-    updated_at timestamp not null default current_timestamp on update current_timestamp,
-    foreign key (bill_id) references bills(bill_id)
-        on delete cascade
-        on update cascade,
-    foreign key (product_id) references products(product_id)
-        on delete cascade
-        on update cascade
+    investment integer not null default 0
 );
 
+select * from investments;
 
-insert into products(name, slug) values ('pluma azul', 'pluma-azul');
-insert into products(name, slug) values ('pluma roja', 'pluma-roja');
-insert into products(name, slug) values ('pluma negra', 'pluma-negra');
-insert into products(name, slug, description) values ('pluma rosa', 'pluma-rosa', 'una pluma para vender');
-
-insert into bill_products(bill_id, product_id) values (1, 1);
-
-update products set description='una pluma para vender' where product_id=6;
-select * from products;
-
-alter table products add column price float after slug; 
-
-update products set price = rand() * 100 where product_id > 0;
+insert into investments(product_id, investment) 
+select product_id, stock*price from products;
