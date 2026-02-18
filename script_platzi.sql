@@ -71,3 +71,30 @@ select * from investments;
 
 insert into investments(product_id, investment) 
 select product_id, stock*price from products;
+
+
+select p.product_id as pid, p.name, p.price, i.investment, round(i.investment / p.price) as inv_calculated,
+p.stock, if(round(i.investment / p.price) = p.stock, 'perfecto','error') as status
+from investments as i
+left join products as p on p.product_id = i.product_id 
+ where investment > 100000 and investment_id % 10 = 0;
+
+
+update products set stock = 90 where product_id=181;
+
+desc bills;
+
+select b.bill_id, b.status, c.name, count(bp.bill_product_id) as number_of_products, round(sum(bp.quantity * p.price * (1 - bp.discount / 100))) as total;
+
+select concat('El cliente', c.name , 'tiene una cuenta', b.status, 'con', count(bp.bill_product_id),
+'productos y suma $', round(sum(bp.quantity * p.price * (1 - bp.discount / 100))) ) as resyultado
+  from bills as b
+	left join clients as c
+	on b.client_id = c.client_id
+    left join bill_products as bp
+    on bp.bill_id = b.bill_id
+    left join products as p
+    on p.product_id = bp.product_id
+group by b.bill_id;
+    
+    
